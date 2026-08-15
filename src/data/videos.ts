@@ -1,4 +1,4 @@
-export type Category = "Анимация" | "Реклама" | "Авто" | "Игровое";
+export type Category = "Анимация" | "Реклама" | "Авто" | "Игровое" | "Моё";
 
 export interface VideoWork {
   id: string;
@@ -17,7 +17,7 @@ export interface VideoWork {
 const CDN = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample";
 const img = (name: string) => `${CDN}/images/${name}.jpg`;
 
-export const CATEGORIES: ("Все" | Category)[] = ["Все", "Анимация", "Реклама", "Авто", "Игровое"];
+export const CATEGORIES: ("Все" | Category)[] = ["Все", "Моё", "Анимация", "Реклама", "Авто", "Игровое"];
 
 export const VIDEOS: VideoWork[] = [
   {

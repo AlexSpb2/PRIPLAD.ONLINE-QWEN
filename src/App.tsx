@@ -1,7 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CATEGORIES, FEATURED_ID, VIDEOS } from "./data/videos";
 import type { Category, VideoWork } from "./data/videos";
 import { useScrollProgress } from "./lib/hooks";
+import {
+  deleteUserVideo,
+  loadUserVideos,
+  saveUserVideo,
+  uid,
+  type StoredVideo,
+} from "./lib/videoStore";
+import AddVideoModal, { type NewVideoData } from "./components/AddVideoModal";
 import Lightbox from "./components/Lightbox";
 import Marquee from "./components/Marquee";
 import Reveal from "./components/Reveal";
@@ -9,9 +17,11 @@ import Scramble from "./components/Scramble";
 import Stage from "./components/Stage";
 import Stats from "./components/Stats";
 import Timecode from "./components/Timecode";
+import Toast from "./components/Toast";
 import VideoCard from "./components/VideoCard";
 
 type Filter = "Все" | Category;
+type UserVideo = VideoWork & { kind: "file" | "url" };
 
 const NAV = [
   { href: "#showreel", label: "Шоурил" },
@@ -62,44 +72,183 @@ function Aperture({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden>
+      <path d="M12 4v16M4 12h16" strokeLinecap="square" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [activeId, setActiveId] = useState(FEATURED_ID);
   const [filter, setFilter] = useState<Filter>("Все");
   const [lightbox, setLightbox] = useState<VideoWork | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [userVideos, setUserVideos] = useState<UserVideo[]>([]);
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
+  const objectUrls = useRef(new Map<string, string>());
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progress = useScrollProgress();
 
-  const active = useMemo(() => VIDEOS.find((v) => v.id === activeId) ?? VIDEOS[0], [activeId]);
+  /* ---------- загрузка своих роликов из IndexedDB ---------- */
+  useEffect(() => {
+    let cancelled = false;
+    loadUserVideos()
+      .then((records) => {
+        if (cancelled) return;
+        const mapped: UserVideo[] = records
+          .slice()
+          .sort((a, b) => b.addedAt - a.addedAt)
+          .map((r) => {
+            let src = r.src;
+            if (r.kind === "file" && r.blob) {
+              const u = URL.createObjectURL(r.blob);
+              objectUrls.current.set(r.id, u);
+              src = u;
+            }
+            return {
+              id: r.id,
+              title: r.title,
+              category: r.category,
+              year: new Date(r.addedAt).getFullYear(),
+              client: r.client,
+              role: r.role,
+              duration: r.duration,
+              src,
+              poster: r.poster,
+              desc: r.desc,
+              tags: ["добавлено вами"],
+              kind: r.kind,
+            };
+          });
+        setUserVideos(mapped);
+      })
+      .catch(() => {
+        /* хранилище недоступно — работаем только в рамках сессии */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* ---------- тосты ---------- */
+  const showToast = (message: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ id: Date.now(), message });
+    toastTimer.current = setTimeout(() => setToast(null), 3400);
+  };
+
+  /* ---------- добавление ролика ---------- */
+  const handleAdd = async (data: NewVideoData) => {
+    const id = uid();
+    let src = "";
+    let blob: Blob | undefined;
+    if (data.file) {
+      const u = URL.createObjectURL(data.file);
+      objectUrls.current.set(id, u);
+      src = u;
+      blob = data.file;
+    } else if (data.url) {
+      src = data.url;
+    }
+
+    const record: StoredVideo = {
+      id,
+      kind: data.file ? "file" : "url",
+      title: data.title,
+      category: data.category,
+      client: data.client || "Свой проект",
+      role: "Автор",
+      desc: data.desc || "Ролик из личного архива.",
+      src: data.file ? "" : src,
+      poster: data.poster,
+      duration: data.duration,
+      addedAt: Date.now(),
+      blob,
+    };
+
+    let persisted = true;
+    try {
+      await saveUserVideo(record);
+    } catch {
+      persisted = false;
+    }
+
+    const work: UserVideo = {
+      id,
+      title: data.title,
+      category: data.category,
+      year: new Date().getFullYear(),
+      client: record.client,
+      role: "Автор",
+      duration: data.duration,
+      src,
+      poster: data.poster,
+      desc: record.desc,
+      tags: ["добавлено вами"],
+      kind: record.kind,
+    };
+
+    setUserVideos((prev) => [work, ...prev]);
+    setModalOpen(false);
+    showToast(
+      persisted
+        ? `«${data.title}» добавлен в архив`
+        : `«${data.title}» добавлен (хранилище недоступно — проживёт до перезагрузки)`
+    );
+  };
+
+  /* ---------- удаление ролика ---------- */
+  const handleRemove = (id: string) => {
+    const v = userVideos.find((x) => x.id === id);
+    if (!v) return;
+    const u = objectUrls.current.get(id);
+    if (u) {
+      URL.revokeObjectURL(u);
+      objectUrls.current.delete(id);
+    }
+    deleteUserVideo(id).catch(() => {});
+    setUserVideos((prev) => prev.filter((x) => x.id !== id));
+    if (lightbox?.id === id) setLightbox(null);
+    showToast(`«${v.title}» удалён из архива`);
+  };
+
+  /* ---------- сводный архив ---------- */
+  const allVideos = useMemo<UserVideo[]>(() => [...userVideos, ...(VIDEOS as UserVideo[])], [userVideos]);
+
+  const active = useMemo(
+    () => allVideos.find((v) => v.id === activeId) ?? allVideos[0],
+    [allVideos, activeId]
+  );
 
   const queue = useMemo(() => {
-    const idx = VIDEOS.findIndex((v) => v.id === activeId);
-    return [...VIDEOS.slice(idx + 1), ...VIDEOS.slice(0, idx)].slice(0, 6);
-  }, [activeId]);
+    const idx = allVideos.findIndex((v) => v.id === active.id);
+    return [...allVideos.slice(idx + 1), ...allVideos.slice(0, idx)].slice(0, 6);
+  }, [allVideos, active.id]);
 
   const filtered = useMemo(
-    () => (filter === "Все" ? VIDEOS : VIDEOS.filter((v) => v.category === filter)),
-    [filter]
+    () => (filter === "Все" ? allVideos : allVideos.filter((v) => v.category === filter)),
+    [allVideos, filter]
   );
 
   const goToNext = () => {
-    const idx = VIDEOS.findIndex((v) => v.id === activeId);
-    setActiveId(VIDEOS[(idx + 1) % VIDEOS.length].id);
+    const idx = allVideos.findIndex((v) => v.id === active.id);
+    setActiveId(allVideos[(idx + 1) % allVideos.length].id);
   };
 
-  const openLightbox = (v: VideoWork) => setLightbox(v);
+  const lightboxList = filtered.length ? filtered : allVideos;
+  const lightboxPosition = lightbox
+    ? `${String(lightboxList.findIndex((v) => v.id === lightbox.id) + 1).padStart(2, "0")} / ${String(
+        lightboxList.length
+      ).padStart(2, "0")}`
+    : "";
 
   const stepInList = (dir: 1 | -1) => {
     if (!lightbox) return;
-    const list = filtered.length ? filtered : VIDEOS;
-    const idx = list.findIndex((v) => v.id === lightbox.id);
-    const next = list[(idx + dir + list.length) % list.length];
-    setLightbox(next);
+    const idx = lightboxList.findIndex((v) => v.id === lightbox.id);
+    setLightbox(lightboxList[(idx + dir + lightboxList.length) % lightboxList.length]);
   };
-
-  const lightboxPosition = lightbox
-    ? `${String((filtered.length ? filtered : VIDEOS).findIndex((v) => v.id === lightbox.id) + 1).padStart(2, "0")} / ${String(
-        (filtered.length ? filtered : VIDEOS).length
-      ).padStart(2, "0")}`
-    : "";
 
   return (
     <div className="relative min-h-screen font-body text-bone">
@@ -133,9 +282,18 @@ export default function App() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3 border border-line bg-coal-900 px-3 py-1.5">
-            <span className="blink h-2 w-2 rounded-full bg-signal" aria-hidden />
-            <Timecode className="text-xs text-ember-soft" />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="hidden items-center gap-2 border border-ember bg-ember px-3.5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-coal-950 transition-all hover:-translate-y-0.5 hover:bg-ember-soft sm:flex"
+            >
+              <PlusIcon />
+              Добавить видео
+            </button>
+            <div className="flex items-center gap-3 border border-line bg-coal-900 px-3 py-1.5">
+              <span className="blink h-2 w-2 rounded-full bg-signal" aria-hidden />
+              <Timecode className="text-xs text-ember-soft" />
+            </div>
           </div>
         </div>
         {/* прогресс чтения */}
@@ -150,7 +308,7 @@ export default function App() {
               <div>
                 <p className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.35em] text-bone-dim">
                   <span className="inline-block h-px w-10 bg-ember" aria-hidden />
-                  Смотровая лента · открытые работы
+                  Смотровая лента · {allVideos.length} роликов
                 </p>
                 <h1 className="mt-4 font-display text-5xl font-black leading-none tracking-tight sm:text-7xl lg:text-8xl">
                   <Scramble text="ШОУРИЛ" delay={250} />
@@ -159,8 +317,9 @@ export default function App() {
               </div>
               <Reveal delay={200} className="max-w-xs">
                 <p className="text-sm leading-relaxed text-bone-dim">
-                  Двенадцать роликов из архива — от открытой анимации до автодрайва. Жмите play
-                  или наводите курсор на карточки: превью запускается само.
+                  Работы из архива — от открытой анимации до автодрайва. Жмите play или наводите
+                  курсор на карточки: превью запускается само. Свои ролики добавляются кнопкой
+                  «Добавить видео».
                 </p>
               </Reveal>
             </div>
@@ -188,10 +347,19 @@ export default function App() {
                 </Reveal>
               </h2>
               <Reveal delay={150}>
-                <p className="font-mono text-xs uppercase tracking-[0.25em] text-bone-dim">
-                  показано <span className="text-ember">{String(filtered.length).padStart(2, "0")}</span> из{" "}
-                  {String(VIDEOS.length).padStart(2, "0")}
-                </p>
+                <div className="flex flex-col items-end gap-3">
+                  <button
+                    onClick={() => setModalOpen(true)}
+                    className="flex items-center gap-2 border border-ember bg-ember px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.2em] text-coal-950 transition-all hover:-translate-y-0.5 hover:bg-ember-soft"
+                  >
+                    <PlusIcon />
+                    Добавить видео
+                  </button>
+                  <p className="font-mono text-xs uppercase tracking-[0.25em] text-bone-dim">
+                    показано <span className="text-ember">{String(filtered.length).padStart(2, "0")}</span> из{" "}
+                    {String(allVideos.length).padStart(2, "0")}
+                  </p>
+                </div>
               </Reveal>
             </div>
 
@@ -199,7 +367,7 @@ export default function App() {
             <Reveal delay={100}>
               <div className="mt-8 flex flex-wrap gap-2">
                 {CATEGORIES.map((c) => {
-                  const count = c === "Все" ? VIDEOS.length : VIDEOS.filter((v) => v.category === c).length;
+                  const count = c === "Все" ? allVideos.length : allVideos.filter((v) => v.category === c).length;
                   const isActive = filter === c;
                   return (
                     <button
@@ -223,10 +391,36 @@ export default function App() {
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((v, i) => (
                 <Reveal key={v.id} delay={(i % 3) * 90}>
-                  <VideoCard video={v} index={VIDEOS.indexOf(v)} onOpen={openLightbox} />
+                  <VideoCard
+                    video={v}
+                    index={allVideos.indexOf(v)}
+                    onOpen={(work) => setLightbox(work)}
+                    onRemove={v.kind ? () => handleRemove(v.id) : undefined}
+                  />
                 </Reveal>
               ))}
             </div>
+
+            {userVideos.length === 0 && (
+              <Reveal delay={200}>
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="group mt-10 flex w-full items-center justify-center gap-4 border-2 border-dashed border-coal-600 px-6 py-8 text-center transition-all duration-300 hover:border-ember/70 hover:bg-coal-900"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center border border-ember text-ember transition-transform duration-300 group-hover:rotate-90">
+                    <PlusIcon />
+                  </span>
+                  <span>
+                    <span className="block font-display text-base font-bold text-bone">
+                      Здесь появится ваш ролик
+                    </span>
+                    <span className="mt-1 block font-mono text-[11px] uppercase tracking-[0.2em] text-bone-dim">
+                      загрузите файл или вставьте ссылку — сохранится в этом браузере
+                    </span>
+                  </span>
+                </button>
+              </Reveal>
+            )}
           </div>
         </section>
 
@@ -403,7 +597,9 @@ export default function App() {
         </div>
       </footer>
 
-      {/* ---------- лайтбокс ---------- */}
+      {/* ---------- модалки ---------- */}
+      {modalOpen && <AddVideoModal onClose={() => setModalOpen(false)} onAdd={handleAdd} />}
+
       {lightbox && (
         <Lightbox
           video={lightbox}
@@ -413,6 +609,8 @@ export default function App() {
           onNext={() => stepInList(1)}
         />
       )}
+
+      {toast && <Toast key={toast.id} message={toast.message} />}
     </div>
   );
 }

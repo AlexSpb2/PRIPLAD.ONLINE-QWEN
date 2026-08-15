@@ -1,16 +1,35 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { VideoWork } from "../data/videos";
 
 interface VideoCardProps {
   video: VideoWork;
   index: number;
   onOpen: (video: VideoWork) => void;
+  onRemove?: () => void;
 }
 
 /** Карточка работы: постер, превью-воспроизведение при наведении, клик — лайтбокс. */
-export default function VideoCard({ video, index, onOpen }: VideoCardProps) {
+export default function VideoCard({ video, index, onOpen, onRemove }: VideoCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [armed, setArm] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (confirmTimer.current) clearTimeout(confirmTimer.current);
+  }, []);
+
+  const handleRemoveClick = () => {
+    if (!onRemove) return;
+    if (!confirming) {
+      setConfirming(true);
+      confirmTimer.current = setTimeout(() => setConfirming(false), 2600);
+    } else {
+      if (confirmTimer.current) clearTimeout(confirmTimer.current);
+      setConfirming(false);
+      onRemove();
+    }
+  };
 
   const handleEnter = () => {
     if (!armed) setArm(true);
@@ -63,9 +82,44 @@ export default function VideoCard({ video, index, onOpen }: VideoCardProps) {
           {video.category}
         </span>
 
-        {/* номер в архиве */}
-        <span className="absolute right-3 top-3 font-mono text-[11px] tracking-widest text-bone/60">
-          {String(index + 1).padStart(2, "0")}
+        {/* номер в архиве + удаление своего ролика */}
+        <span className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
+          <span className="font-mono text-[11px] tracking-widest text-bone/60">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          {onRemove && (
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label={confirming ? "Подтвердить удаление" : `Удалить «${video.title}»`}
+              title={confirming ? "Нажмите ещё раз" : "Удалить из архива"}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                handleRemoveClick();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleRemoveClick();
+                }
+              }}
+              className={`flex h-6 min-w-6 cursor-pointer items-center justify-center border px-1.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                confirming
+                  ? "border-signal bg-signal text-coal-950"
+                  : "border-bone/25 bg-coal-950/70 text-bone-dim hover:border-signal hover:text-signal"
+              }`}
+            >
+              {confirming ? (
+                "точно?"
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                  <path d="M5 5l14 14M19 5L5 19" strokeLinecap="square" />
+                </svg>
+              )}
+            </span>
+          )}
         </span>
 
         {/* хронометраж */}
