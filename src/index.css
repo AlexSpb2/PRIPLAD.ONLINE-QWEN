@@ -1,1 +1,255 @@
 @import "tailwindcss";
+
+@theme {
+  --color-coal-950: #0c0b09;
+  --color-coal-900: #12100c;
+  --color-coal-850: #171410;
+  --color-coal-800: #1e1a14;
+  --color-coal-700: #2a251c;
+  --color-coal-600: #3b3327;
+  --color-bone: #f3ecdd;
+  --color-bone-dim: #a89c85;
+  --color-ember: #f5a623;
+  --color-ember-soft: #ffc965;
+  --color-signal: #ff5b45;
+  --color-line: #2a251c;
+
+  --font-display: "Unbounded", "Golos Text", sans-serif;
+  --font-body: "Golos Text", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-coal-950);
+}
+
+body {
+  margin: 0;
+  background: var(--color-coal-950);
+  color: var(--color-bone);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-ember);
+  color: var(--color-coal-950);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-coal-950);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-coal-700);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ember);
+}
+
+/* ---------- film grain ---------- */
+.grain {
+  position: fixed;
+  inset: -100px;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 7s steps(8) infinite;
+}
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-40px, 30px); }
+  50% { transform: translate(30px, -40px); }
+  75% { transform: translate(-30px, -30px); }
+  100% { transform: translate(40px, 30px); }
+}
+
+/* ---------- ambient glow layers ---------- */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 600px at 12% -8%, rgba(245, 166, 35, 0.09), transparent 60%),
+    radial-gradient(800px 700px at 95% 15%, rgba(255, 91, 69, 0.06), transparent 55%),
+    radial-gradient(1000px 800px at 50% 115%, rgba(245, 166, 35, 0.05), transparent 60%);
+}
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(6, 5, 4, 0.55) 100%);
+}
+
+/* ---------- blinking REC ---------- */
+.blink {
+  animation: blink 1.25s steps(1) infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.12; }
+}
+
+/* ---------- marquee ---------- */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* ---------- scroll reveal ---------- */
+.rv {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--rv-delay, 0ms);
+}
+.rv.in {
+  opacity: 1;
+  transform: none;
+}
+.rv-mask {
+  display: block;
+  overflow: hidden;
+}
+.rv-mask > .rv-mask-inner {
+  display: block;
+  transform: translateY(112%);
+  transition: transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--rv-delay, 0ms);
+}
+.rv-mask.in > .rv-mask-inner {
+  transform: translateY(0);
+}
+
+/* ---------- underline sweep ---------- */
+.u-sweep {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  transition: background-size 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.u-sweep:hover,
+.u-sweep:focus-visible {
+  background-size: 100% 2px;
+}
+
+/* ---------- film perforation strip ---------- */
+.perf {
+  height: 18px;
+  background-color: var(--color-coal-850);
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-coal-950) 0 7px,
+    transparent 7px 22px
+  );
+  background-size: 22px 8px;
+  background-repeat: repeat-x;
+  background-position: center;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+/* ---------- viewfinder corner ticks ---------- */
+.tick {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: var(--color-ember);
+  z-index: 20;
+  pointer-events: none;
+}
+
+/* ---------- эквалайзер в очереди ---------- */
+.eq-bar {
+  animation: eq 0.8s ease-in-out infinite alternate;
+  transform-origin: bottom;
+}
+@keyframes eq {
+  from { transform: scaleY(0.25); }
+  to { transform: scaleY(1); }
+}
+
+/* ---------- lightbox ---------- */
+.lightbox-in {
+  animation: lb-in 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+@keyframes lb-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fade-in {
+  animation: fade-in 0.3s ease both;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------- poster image ---------- */
+.poster-img {
+  transition: transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1), filter 0.5s ease;
+}
+.group:hover .poster-img {
+  transform: scale(1.06);
+  filter: saturate(1.1);
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .grain,
+  .blink,
+  .marquee-track {
+    animation: none !important;
+  }
+  .rv,
+  .rv-mask > .rv-mask-inner,
+  .poster-img,
+  .u-sweep {
+    transition: none !important;
+  }
+  .rv,
+  .rv-mask > .rv-mask-inner {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .lightbox-in,
+  .fade-in {
+    animation-duration: 0.01ms !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
