@@ -4,18 +4,18 @@ export interface Contact {
   handle: string;
 }
 
-// Mock-контакты. Реальные значения добавит владелец.
 export const CONTACTS: Contact[] = [
   {
     label: "Telegram",
-    href: "https://t.me/priplad",
-    handle: "@priplad",
+    href: "https://t.me/alexeypriplad",
+    handle: "@alexeypriplad",
   },
   {
     label: "VK",
-    href: "https://vk.com/priplad",
-    handle: "vk.com/priplad",
+    href: "https://vk.ru/alexeypriplad",
+    handle: "vk.ru/alexeypriplad",
   },
 ];
 
-export const PHONE = "+7 (000) 000-00-00";
+export const PHONE = "911-2090801";
+export const PHONE_TEL = "tel:9112090801";

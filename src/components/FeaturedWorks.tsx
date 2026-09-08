@@ -10,21 +10,21 @@ export default function FeaturedWorks() {
 
   return (
     <>
-      <section id="works" className="scroll-mt-20 border-t border-line px-4 py-16 sm:px-6 sm:py-24">
+      <section id="works" className="scroll-mt-14 border-t border-line px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <Reveal>
-            <div className="mb-8 border-b border-line pb-8 sm:mb-12">
-              <p className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.35em] text-bone-dim">
-                <span className="inline-block h-px w-10 bg-ember" aria-hidden />
-                Избранные работы
+            <div className="mb-6 border-b border-line pb-6 sm:mb-8">
+              <p className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.35em] text-bone-dim">
+                <span className="inline-block h-px w-8 bg-ember" aria-hidden />
+                Работы
               </p>
-              <h2 className="mt-4 font-display text-4xl font-black tracking-tight sm:text-6xl lg:text-7xl">
-                ИЗБРАННЫЕ РАБОТЫ
+              <h2 className="mt-3 font-display text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
+                РАБОТЫ
               </h2>
             </div>
           </Reveal>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURED_WORKS.map((video, i) => (
               <Reveal key={video.id} delay={(i % 3) * 90}>
                 <VideoCard video={video} onOpen={setLightbox} />

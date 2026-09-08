@@ -8,104 +8,100 @@ export interface Video {
   published: boolean;
 }
 
-// Mock-данные для видео
-// В будущем эти данные будут приходить из backend
-export const VIDEOS: Video[] = [
+// Mock данные. Позже будут заменены через backend.
+const CDN = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample";
+const img = (name: string) => `${CDN}/images/${name}.jpg`;
+
+export const SHOWREEL: Video = {
+  id: "showreel-2026",
+  title: "ШОУРИЛ'26",
+  description: "Подборка работ за 2026 год",
+  videoUrl: `${CDN}/BigBuckBunny.mp4`,
+  poster: img("BigBuckBunny"),
+  sortOrder: 0,
+  published: true,
+};
+
+export const FEATURED_WORKS: Video[] = [
   {
-    id: "showreel-26",
-    title: "ШОУРИЛ'26",
-    description: "Подборка лучших работ за 2026 год",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+    id: "work-1",
+    title: "Неоновый город",
+    description: "AI-генерация киберпанк-локации с динамичной камерой",
+    videoUrl: `${CDN}/ElephantsDream.mp4`,
+    poster: img("ElephantsDream"),
     sortOrder: 1,
     published: true,
   },
   {
-    id: "featured-1",
-    title: "Городские огни",
-    description: "AI-генерация ночного города с неоновыми вывесками",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+    id: "work-2",
+    title: "Портрет в движении",
+    description: "Эксперимент с AI-анимацией лица и микро-движениями",
+    videoUrl: `${CDN}/Sintel.mp4`,
+    poster: img("Sintel"),
     sortOrder: 2,
     published: true,
   },
   {
-    id: "featured-2",
-    title: "Цифровой рассвет",
-    description: "Генерация пейзажа на стыке реального и виртуального",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg",
+    id: "work-3",
+    title: "Абстрактная форма",
+    description: "Генеративная абстракция с морфингом и цветом",
+    videoUrl: `${CDN}/TearsOfSteel.mp4`,
+    poster: img("TearsOfSteel"),
     sortOrder: 3,
     published: true,
   },
   {
-    id: "featured-3",
-    title: "Механика движения",
-    description: "Эксперимент с физикой и динамикой в AI-видео",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg",
+    id: "work-4",
+    title: "Природа будущего",
+    description: "Футуристический пейзаж, созданный с помощью AI",
+    videoUrl: `${CDN}/ForBiggerBlazes.mp4`,
+    poster: img("ForBiggerBlazes"),
     sortOrder: 4,
     published: true,
   },
   {
-    id: "featured-4",
-    title: "Портрет эпохи",
-    description: "AI-интерпретация классического портрета",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerFun.jpg",
+    id: "work-5",
+    title: "Промо-ролик",
+    description: "Коммерческий ролик с AI-визуализацией продукта",
+    videoUrl: `${CDN}/ForBiggerEscapes.mp4`,
+    poster: img("ForBiggerEscapes"),
     sortOrder: 5,
     published: true,
   },
   {
-    id: "featured-5",
-    title: "Скорость света",
-    description: "Динамичный ролик о движении и скорости",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg",
+    id: "work-6",
+    title: "Музыкальный клип",
+    description: "AI-клип с генерацией образов под музыку",
+    videoUrl: `${CDN}/ForBiggerFun.mp4`,
+    poster: img("ForBiggerFun"),
     sortOrder: 6,
     published: true,
   },
   {
-    id: "featured-6",
-    title: "Текстуры времени",
-    description: "Работа с текстурой и деталями в AI-генерации",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerMeltdowns.jpg",
+    id: "work-7",
+    title: "Архитектурная визуализация",
+    description: "Концепт здания будущего с AI-рендерингом",
+    videoUrl: `${CDN}/ForBiggerJoyrides.mp4`,
+    poster: img("ForBiggerJoyrides"),
     sortOrder: 7,
     published: true,
   },
   {
-    id: "featured-7",
-    title: "Архитектура снов",
-    description: "Сюрреалистичные пространства, созданные AI",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/Sintel.jpg",
+    id: "work-8",
+    title: "Эксперимент: стиль",
+    description: "Стилизация под разные художественные направления",
+    videoUrl: `${CDN}/ForBiggerMeltdowns.mp4`,
+    poster: img("ForBiggerMeltdowns"),
     sortOrder: 8,
     published: true,
   },
   {
-    id: "featured-8",
-    title: "Стальные слёзы",
-    description: "Смешение live-action и AI-генерации",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/TearsOfSteel.jpg",
+    id: "work-9",
+    title: "Документальный фрагмент",
+    description: "AI-реконструкция исторического события",
+    videoUrl: `${CDN}/SubaruOutbackOnStreetAndDirt.mp4`,
+    poster: img("SubaruOutbackOnStreetAndDirt"),
     sortOrder: 9,
     published: true,
   },
-  {
-    id: "featured-9",
-    title: "Грани реальности",
-    description: "Исследование границы между реальным и сгенерированным",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
-    poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/SubaruOutbackOnStreetAndDirt.jpg",
-    sortOrder: 10,
-    published: true,
-  },
 ];
-
-// ШОУРИЛ - один выбранный ролик
-export const SHOWREEL = VIDEOS.find((v) => v.id === "showreel-26") || VIDEOS[0];
-
-// ИЗБРАННЫЕ РАБОТЫ - отсортированы по sortOrder
-export const FEATURED_WORKS = VIDEOS.filter((v) => v.published && v.id !== "showreel-26")
-  .sort((a, b) => a.sortOrder - b.sortOrder);
