@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Video } from "../data/videos";
+import type { Video } from "../types";
 
 interface VideoCardProps {
   video: Video;

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { Video } from "../data/videos";
+import type { Video } from "../types";
 import VideoPlayer from "./VideoPlayer";
 
 interface LightboxProps {

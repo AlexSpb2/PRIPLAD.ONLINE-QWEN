@@ -1,10 +1,15 @@
 import { useState } from "react";
-import { SHOWREEL } from "../data/videos";
+import { useApp } from "../store/AppContext";
 import Reveal from "./Reveal";
 import VideoPlayer from "./VideoPlayer";
 
 export default function Showreel() {
+  const { data } = useApp();
   const [isPlaying, setIsPlaying] = useState(false);
+
+  if (!data) return null;
+
+  const { showreel } = data;
 
   return (
     <section id="showreel" className="scroll-mt-14 px-4 py-12 sm:px-6 sm:py-16">
@@ -13,13 +18,13 @@ export default function Showreel() {
           <div className="mb-6 border-b border-line pb-6 sm:mb-8">
             <p className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.35em] text-bone-dim">
               <span className="inline-block h-px w-8 bg-ember" aria-hidden />
-              ШОУРИЛ'26
+              {showreel.title}
             </p>
             <h2 className="mt-3 font-display text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
-              {SHOWREEL.title}
+              {showreel.title}
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-bone-dim">
-              {SHOWREEL.description}
+              {showreel.description}
             </p>
           </div>
         </Reveal>
@@ -29,8 +34,8 @@ export default function Showreel() {
             {!isPlaying && (
               <>
                 <img
-                  src={SHOWREEL.poster}
-                  alt={SHOWREEL.title}
+                  src={showreel.poster}
+                  alt={showreel.title}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-coal-950/80 via-transparent to-transparent" />
@@ -49,8 +54,8 @@ export default function Showreel() {
             )}
             {isPlaying && (
               <VideoPlayer
-                url={SHOWREEL.videoUrl}
-                poster={SHOWREEL.poster}
+                url={showreel.videoUrl}
+                poster={showreel.poster}
                 autoPlay
                 controls
                 className="absolute inset-0 h-full w-full"
