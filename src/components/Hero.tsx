@@ -4,9 +4,9 @@ import Scramble from "./Scramble";
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-[70vh] flex-col items-center justify-center px-4 py-16 text-center sm:px-6 sm:py-20">
+    <section className="relative flex flex-col items-center justify-center px-4 py-12 text-center sm:px-6 sm:py-16">
       <Reveal>
-        <h1 className="font-display text-3xl font-black leading-[0.95] tracking-tight sm:text-5xl lg:text-6xl">
+        <h1 className="font-display text-2xl font-black leading-[0.95] tracking-tight sm:text-3xl lg:text-4xl">
           <Scramble text="АЛЕКСЕЙ" delay={100} />
           <br />
           <Scramble text="ПРИПЛАД" delay={300} />
@@ -14,22 +14,22 @@ export default function Hero() {
       </Reveal>
 
       <Reveal delay={200}>
-        <p className="mt-4 font-mono text-xs uppercase tracking-[0.3em] text-bone-dim sm:text-sm">
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.3em] text-bone-dim sm:text-xs">
           DIRECTOR / VIDEOGRAPHER / AI VIDEO
         </p>
       </Reveal>
 
       <Reveal delay={400}>
-        <p className="mt-6 max-w-md text-sm leading-relaxed text-bone-dim">
+        <p className="mt-4 max-w-md text-sm leading-relaxed text-bone-dim">
           Создаю видео с помощью AI-инструментов. От идеи до готового ролика — промпты, генерация, монтаж.
         </p>
       </Reveal>
 
       <Reveal delay={500}>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           <a
             href={PHONE_TEL}
-            className="u-sweep border border-line px-5 py-2.5 font-mono text-xs uppercase tracking-[0.2em] text-bone transition-all hover:-translate-y-0.5 hover:border-ember hover:text-ember"
+            className="u-sweep border border-line px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone transition-all hover:border-ember hover:text-ember sm:text-[11px]"
           >
             {PHONE}
           </a>
@@ -39,7 +39,7 @@ export default function Hero() {
               href={c.href}
               target="_blank"
               rel="noreferrer"
-              className="u-sweep border border-line px-5 py-2.5 font-mono text-xs uppercase tracking-[0.2em] text-bone transition-all hover:-translate-y-0.5 hover:border-ember hover:text-ember"
+              className="u-sweep border border-line px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-bone transition-all hover:border-ember hover:text-ember sm:text-[11px]"
             >
               {c.label}
             </a>
