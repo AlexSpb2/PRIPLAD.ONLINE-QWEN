@@ -1,35 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import type { VideoWork } from "../data/videos";
+import { useRef, useState } from "react";
+import type { Video } from "../data/videos";
 
 interface VideoCardProps {
-  video: VideoWork;
-  index: number;
-  onOpen: (video: VideoWork) => void;
-  onRemove?: () => void;
+  video: Video;
+  onOpen: (video: Video) => void;
 }
 
 /** Карточка работы: постер, превью-воспроизведение при наведении, клик — лайтбокс. */
-export default function VideoCard({ video, index, onOpen, onRemove }: VideoCardProps) {
+export default function VideoCard({ video, onOpen }: VideoCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [armed, setArm] = useState(false);
-  const [confirming, setConfirming] = useState(false);
-  const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => () => {
-    if (confirmTimer.current) clearTimeout(confirmTimer.current);
-  }, []);
-
-  const handleRemoveClick = () => {
-    if (!onRemove) return;
-    if (!confirming) {
-      setConfirming(true);
-      confirmTimer.current = setTimeout(() => setConfirming(false), 2600);
-    } else {
-      if (confirmTimer.current) clearTimeout(confirmTimer.current);
-      setConfirming(false);
-      onRemove();
-    }
-  };
 
   const handleEnter = () => {
     if (!armed) setArm(true);
@@ -65,7 +45,7 @@ export default function VideoCard({ video, index, onOpen, onRemove }: VideoCardP
         {armed && (
           <video
             ref={videoRef}
-            src={video.src}
+            src={video.videoUrl}
             muted
             loop
             playsInline
@@ -77,56 +57,6 @@ export default function VideoCard({ video, index, onOpen, onRemove }: VideoCardP
         {/* затемнение снизу */}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-coal-950/90 via-coal-950/30 to-transparent" />
 
-        {/* категория */}
-        <span className="absolute left-3 top-3 border border-bone/25 bg-coal-950/70 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-bone">
-          {video.category}
-        </span>
-
-        {/* номер в архиве + удаление своего ролика */}
-        <span className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
-          <span className="font-mono text-[11px] tracking-widest text-bone/60">
-            {String(index + 1).padStart(2, "0")}
-          </span>
-          {onRemove && (
-            <span
-              role="button"
-              tabIndex={0}
-              aria-label={confirming ? "Подтвердить удаление" : `Удалить «${video.title}»`}
-              title={confirming ? "Нажмите ещё раз" : "Удалить из архива"}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                handleRemoveClick();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleRemoveClick();
-                }
-              }}
-              className={`flex h-6 min-w-6 cursor-pointer items-center justify-center border px-1.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
-                confirming
-                  ? "border-signal bg-signal text-coal-950"
-                  : "border-bone/25 bg-coal-950/70 text-bone-dim hover:border-signal hover:text-signal"
-              }`}
-            >
-              {confirming ? (
-                "точно?"
-              ) : (
-                <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
-                  <path d="M5 5l14 14M19 5L5 19" strokeLinecap="square" />
-                </svg>
-              )}
-            </span>
-          )}
-        </span>
-
-        {/* хронометраж */}
-        <span className="absolute bottom-3 right-3 bg-ember px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums text-coal-950">
-          {video.duration}
-        </span>
-
         {/* play в центре при наведении */}
         <span className="absolute inset-0 flex items-center justify-center">
           <span className="flex h-14 w-14 scale-75 items-center justify-center border-2 border-ember bg-coal-950/75 text-ember opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100">
@@ -136,25 +66,14 @@ export default function VideoCard({ video, index, onOpen, onRemove }: VideoCardP
           </span>
         </span>
 
-        {/* название */}
+        {/* название и описание */}
         <span className="absolute inset-x-3 bottom-3">
           <span className="block font-display text-base font-semibold leading-snug text-bone sm:text-lg">
             {video.title}
           </span>
-          <span className="mt-0.5 block font-mono text-[11px] uppercase tracking-wider text-bone-dim">
-            {video.client} · {video.year}
+          <span className="mt-1 line-clamp-2 block text-xs text-bone-dim">
+            {video.description}
           </span>
-        </span>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line px-4 py-3">
-        <span className="font-mono text-[11px] uppercase tracking-wider text-bone-dim">{video.role}</span>
-        <span className="ml-auto flex flex-wrap gap-1.5">
-          {video.tags.slice(0, 2).map((t) => (
-            <span key={t} className="bg-coal-800 px-2 py-0.5 text-[11px] text-bone-dim transition-colors group-hover:text-bone">
-              #{t}
-            </span>
-          ))}
         </span>
       </div>
     </button>

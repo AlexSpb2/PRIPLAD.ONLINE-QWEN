@@ -1,15 +1,4 @@
-const ITEMS = [
-  "РЕКЛАМА",
-  "АНИМАЦИЯ",
-  "РЕПОРТАЖ",
-  "АЭРОСЪЁМКА",
-  "МОНТАЖ",
-  "ЦВЕТОКОРРЕКЦИЯ",
-  "САУНД-ДИЗАЙН",
-  "ИНТЕРВЬЮ",
-  "ТРЕЙЛЕРЫ",
-  "КЛИПЫ",
-];
+import { TOOLS } from "../data/tools";
 
 function Diamond() {
   return (
@@ -19,14 +8,14 @@ function Diamond() {
   );
 }
 
-/** Бегущая строка-титры с направлениями продакшна. Пауза при наведении. */
+/** Бегущая строка с AI-инструментами. Пауза при наведении. */
 export default function Marquee() {
   const row = (key: string) => (
     <div key={key} className="flex shrink-0 items-center" aria-hidden={key === "b"}>
-      {ITEMS.map((item) => (
-        <span key={`${key}-${item}`} className="flex items-center">
+      {TOOLS.map((tool) => (
+        <span key={`${key}-${tool}`} className="flex items-center">
           <span className="font-display text-sm font-semibold tracking-[0.3em] text-bone-dim whitespace-nowrap">
-            {item}
+            {tool}
           </span>
           <Diamond />
         </span>
