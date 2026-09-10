@@ -1,23 +1,24 @@
 <?php
 /**
- * Data - получение всех данных (форматы, видео, шоурил)
+ * Data - получение данных для сайта и админки
  */
 
 require_once __DIR__ . '/helpers.php';
 
-// Получаем форматы
-$stmt = $pdo->query("SELECT * FROM formats ORDER BY sort_order ASC");
+$stmt = $pdo->query("SELECT * FROM formats ORDER BY sort_order ASC, id ASC");
 $formats = $stmt->fetchAll();
 
-// Получаем все видео
-$stmt = $pdo->query("SELECT * FROM videos ORDER BY sort_order ASC");
+// Администратор получает также скрытые видео; публичный запрос — только опубликованные.
+$isAdmin = !empty($_SESSION['authenticated']);
+$videoSql = $isAdmin
+    ? "SELECT * FROM videos ORDER BY format_id ASC, sort_order ASC, id ASC"
+    : "SELECT * FROM videos WHERE published = 1 ORDER BY format_id ASC, sort_order ASC, id ASC";
+$stmt = $pdo->query($videoSql);
 $videos = $stmt->fetchAll();
 
-// Получаем шоурил
 $stmt = $pdo->query("SELECT * FROM showreel WHERE id = 1");
 $showreel = $stmt->fetch();
 
-// Если шоурила нет, создаём дефолтный
 if (!$showreel) {
     $showreel = [
         'title' => 'ШОУРИЛ\'26',
@@ -27,7 +28,6 @@ if (!$showreel) {
     ];
 }
 
-// Форматируем данные
 $formattedFormats = array_map(function($f) {
     return [
         'id' => (string)$f['id'],
@@ -64,4 +64,4 @@ echo json_encode([
     'formats' => $formattedFormats,
     'videos' => $formattedVideos,
     'showreel' => $formattedShowreel
-]);
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
