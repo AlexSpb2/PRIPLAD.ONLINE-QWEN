@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useApp } from "../store/AppContext";
 import type { Format } from "../types";
 import FormatForm from "./FormatForm";
+import FormatIcon from "../components/FormatIcon";
 
 export default function FormatsPage() {
   const { data, deleteFormat } = useApp();
@@ -44,7 +45,7 @@ export default function FormatsPage() {
               className="flex items-center gap-4 border border-line bg-coal-900 p-4"
             >
               {/* Иконка */}
-              <span className="text-2xl">{format.icon}</span>
+              <FormatIcon formatName={format.name} className="h-6 w-6 text-ember" />
 
               {/* Информация */}
               <div className="min-w-0 flex-1">

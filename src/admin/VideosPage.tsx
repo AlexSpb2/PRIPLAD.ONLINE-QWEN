@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useApp } from "../store/AppContext";
 import type { Video } from "../types";
 import VideoForm from "./VideoForm";
+import FormatIcon from "../components/FormatIcon";
 
 export default function VideosPage() {
   const { data, deleteVideo, updateVideo, reorderVideos } = useApp();
@@ -87,13 +88,14 @@ export default function VideosPage() {
             <button
               key={f.id}
               onClick={() => setFilterFormat(f.id)}
-              className={`border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] ${
+              className={`flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] ${
                 filterFormat === f.id
                   ? "border-ember bg-ember text-coal-950"
                   : "border-line text-bone-dim hover:text-bone"
               }`}
             >
-              {f.icon} {f.name} ({count})
+              <FormatIcon formatName={f.name} className="h-3 w-3" />
+              {f.name} ({count})
             </button>
           );
         })}
@@ -105,7 +107,7 @@ export default function VideosPage() {
           {videosByFormat.map(({ format, videos }) => (
             <div key={format.id}>
               <h3 className="mb-3 flex items-center gap-2 font-display text-sm font-bold">
-                <span>{format.icon}</span>
+                <FormatIcon formatName={format.name} className="h-4 w-4 text-ember" />
                 <span>{format.name}</span>
                 <span className="font-mono text-[10px] text-bone-dim">({videos.length})</span>
               </h3>
@@ -221,8 +223,9 @@ function VideoRow({
       {/* Информация */}
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold">{video.title}</p>
-        <p className="truncate font-mono text-[10px] text-bone-dim">
-          {format.icon} {format.name} · {video.published ? "Опубликовано" : "Скрыто"}
+        <p className="flex items-center gap-1.5 truncate font-mono text-[10px] text-bone-dim">
+          <FormatIcon formatName={format.name} className="h-3 w-3 shrink-0" />
+          <span className="truncate">{format.name} · {video.published ? "Опубликовано" : "Скрыто"}</span>
         </p>
       </div>
 

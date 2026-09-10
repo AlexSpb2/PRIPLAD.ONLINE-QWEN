@@ -152,7 +152,7 @@ export default function VideoForm({ video, onClose }: VideoFormProps) {
             >
               {formats.map((f) => (
                 <option key={f.id} value={f.id}>
-                  {f.icon} {f.name}
+                  {f.name}
                 </option>
               ))}
             </select>

@@ -3,58 +3,80 @@ import Reveal from "./Reveal";
 
 export default function Process() {
   return (
-    <section id="process" className="scroll-mt-14 border-t border-line bg-coal-900/40 py-10 sm:py-12">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-10">
-        {/* sticky-колонка */}
-        <div className="lg:sticky lg:top-20 lg:self-start">
-          <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ember">
-            Процесс
-          </p>
-          <h2 className="mt-2 font-display text-base font-bold leading-tight tracking-tight sm:text-lg lg:text-xl">
-            <Reveal variant="mask">
-              <span>От идеи до</span>
-            </Reveal>
-            <Reveal variant="mask" delay={100}>
-              <span>
-                готового <span className="text-ember">видео</span>
-              </span>
-            </Reveal>
-          </h2>
-          <Reveal delay={150}>
-            <p className="mt-3 text-xs leading-relaxed text-bone-dim sm:text-sm">
-              От концепции до финального монтажа — с контролем ключевых решений на каждом этапе.
+    <section id="process" className="scroll-mt-14 border-t border-line bg-coal-900/40 py-6 sm:py-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <Reveal>
+          <div className="mb-4 border-b border-line pb-4 sm:mb-5">
+            <p className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.35em] text-bone-dim">
+              <span className="inline-block h-px w-8 bg-ember" aria-hidden />
+              Процесс
             </p>
-          </Reveal>
-        </div>
+            <h2 className="mt-2 font-display text-lg font-black tracking-tight sm:text-xl lg:text-2xl">
+              От идеи до готового <span className="text-ember">видео</span>
+            </h2>
+          </div>
+        </Reveal>
 
-        {/* шаги */}
-        <ol className="border-t border-line">
-          {PROCESS_STEPS.map((s, i) => (
-            <Reveal key={s.num} delay={i * 60}>
-              <li className="flex gap-4 border-b border-line py-4 sm:gap-6 sm:py-5">
-                <span className="font-mono text-xs font-semibold text-coal-600 sm:text-sm">
-                  {s.num}
-                </span>
-                <div>
-                  <h3 className="font-body text-sm font-semibold sm:text-base">{s.title}</h3>
-                  <p className="mt-1.5 max-w-xl text-xs leading-relaxed text-bone-dim sm:text-sm">
-                    {s.text}
+        {/* Storyboard */}
+        <div className="relative">
+          {/* SVG линия-траектория */}
+          <svg
+            className="pointer-events-none absolute inset-0 hidden h-full w-full sm:block"
+            aria-hidden
+          >
+            <path
+              d="M 60 40 Q 150 20, 240 50 T 420 45 Q 500 60, 580 40"
+              fill="none"
+              stroke="#3b3327"
+              strokeWidth="1.5"
+              strokeDasharray="4 4"
+            />
+          </svg>
+
+          {/* Карточки этапов */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3">
+            {PROCESS_STEPS.map((step, i) => (
+              <Reveal key={step.num} delay={i * 80}>
+                <div
+                  className="relative border border-line bg-coal-900 p-3 transition-all hover:border-ember/40 sm:p-4"
+                  style={{
+                    transform: `translateY(${i % 2 === 0 ? "0" : "8px"}) rotate(${i % 2 === 0 ? "-0.5" : "0.5"}deg)`,
+                  }}
+                >
+                  {/* Номер */}
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="font-mono text-[10px] font-semibold text-ember">
+                      {step.num}
+                    </span>
+                    <div className="h-px flex-1 bg-line" />
+                  </div>
+
+                  {/* Заголовок */}
+                  <h3 className="font-display text-sm font-bold leading-tight sm:text-base">
+                    {step.title}
+                  </h3>
+
+                  {/* Описание */}
+                  <p className="mt-1.5 text-xs leading-snug text-bone-dim sm:text-[11px]">
+                    {step.text}
                   </p>
+
+                  {/* Теги */}
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {s.tags.map((t) => (
+                    {step.tags.slice(0, 3).map((tag) => (
                       <span
-                        key={t}
+                        key={tag}
                         className="font-mono text-[8px] uppercase tracking-wider text-coal-600 sm:text-[9px]"
                       >
-                        {t}
+                        {tag}
                       </span>
                     ))}
                   </div>
                 </div>
-              </li>
-            </Reveal>
-          ))}
-        </ol>
+              </Reveal>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

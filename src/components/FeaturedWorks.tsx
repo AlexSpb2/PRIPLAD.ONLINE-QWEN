@@ -4,6 +4,7 @@ import type { Video } from "../types";
 import Reveal from "./Reveal";
 import VideoCard from "./VideoCard";
 import Lightbox from "./Lightbox";
+import FormatIcon from "./FormatIcon";
 
 export default function FeaturedWorks() {
   const { data } = useApp();
@@ -36,7 +37,7 @@ export default function FeaturedWorks() {
             <div className="mb-6 border-b border-line pb-6 sm:mb-8">
               <p className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.35em] text-bone-dim">
                 <span className="inline-block h-px w-8 bg-ember" aria-hidden />
-                Работы
+                ИЗБРАННОЕ
               </p>
               <h2 className="mt-3 font-display text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
                 РАБОТЫ
@@ -61,13 +62,14 @@ export default function FeaturedWorks() {
                 <button
                   key={f.id}
                   onClick={() => setActiveFormat(f.id)}
-                  className={`border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                  className={`flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
                     activeFormat === f.id
                       ? "border-ember bg-ember text-coal-950"
                       : "border-line text-bone-dim hover:text-bone"
                   }`}
                 >
-                  {f.icon} {f.name}
+                  <FormatIcon formatName={f.name} className="h-3 w-3" />
+                  {f.name}
                 </button>
               ))}
             </div>

@@ -18,7 +18,7 @@ export default function Showreel() {
           <div className="mb-6 border-b border-line pb-6 sm:mb-8">
             <p className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.35em] text-bone-dim">
               <span className="inline-block h-px w-8 bg-ember" aria-hidden />
-              {showreel.title}
+              ШОУРИЛ
             </p>
             <h2 className="mt-3 font-display text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
               {showreel.title}
