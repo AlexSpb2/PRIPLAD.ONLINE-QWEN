@@ -21,7 +21,6 @@ if (empty($data['id'])) {
     exit;
 }
 
-// Проверяем существование видео
 $stmt = $pdo->prepare("SELECT id FROM videos WHERE id = ?");
 $stmt->execute([$data['id']]);
 if (!$stmt->fetch()) {
@@ -30,13 +29,12 @@ if (!$stmt->fetch()) {
     exit;
 }
 
-// Строим запрос на обновление
 $updates = [];
 $params = [];
 
 if (isset($data['title'])) {
     $updates[] = "title = ?";
-    $params[] = $data['title'];
+    $params[] = trim($data['title']);
 }
 
 if (isset($data['description'])) {
@@ -45,19 +43,18 @@ if (isset($data['description'])) {
 }
 
 if (isset($data['videoUrl'])) {
-    if (!validateVideoUrl($data['videoUrl'])) {
+    $videoUrl = normalizeVideoUrl($data['videoUrl']);
+    if (!validateVideoUrl($videoUrl)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Invalid video URL']);
+        echo json_encode(['error' => 'Invalid video URL or iframe']);
         exit;
     }
     $updates[] = "video_url = ?";
-    $params[] = $data['videoUrl'];
-    
-    // Обновляем thumbnail если он не указан явно
+    $params[] = $videoUrl;
+
     if (!isset($data['poster']) || empty($data['poster'])) {
-        $thumbnail = getVideoThumbnail($data['videoUrl']) ?? '';
         $updates[] = "thumbnail = ?";
-        $params[] = $thumbnail;
+        $params[] = getVideoThumbnail($videoUrl) ?? '';
     }
 }
 
@@ -67,7 +64,6 @@ if (isset($data['poster'])) {
 }
 
 if (isset($data['formatId'])) {
-    // Проверяем существование формата
     $stmt = $pdo->prepare("SELECT id FROM formats WHERE id = ?");
     $stmt->execute([$data['formatId']]);
     if (!$stmt->fetch()) {
@@ -101,7 +97,6 @@ if (empty($updates)) {
 }
 
 $params[] = $data['id'];
-
 $stmt = $pdo->prepare("UPDATE videos SET " . implode(', ', $updates) . " WHERE id = ?");
 $stmt->execute($params);
 
