@@ -15,20 +15,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $data = getJsonInput();
 
-// Валидация
 if (empty($data['title']) || empty($data['videoUrl']) || empty($data['formatId'])) {
     http_response_code(400);
     echo json_encode(['error' => 'Missing required fields']);
     exit;
 }
 
-if (!validateVideoUrl($data['videoUrl'])) {
+$videoUrl = normalizeVideoUrl($data['videoUrl']);
+
+if (!validateVideoUrl($videoUrl)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid video URL']);
+    echo json_encode(['error' => 'Invalid video URL or iframe']);
     exit;
 }
 
-// Проверяем существование формата
 $stmt = $pdo->prepare("SELECT id FROM formats WHERE id = ?");
 $stmt->execute([$data['formatId']]);
 if (!$stmt->fetch()) {
@@ -37,19 +37,16 @@ if (!$stmt->fetch()) {
     exit;
 }
 
-// Получаем максимальный sort_order для этого формата
 $stmt = $pdo->prepare("SELECT MAX(sort_order) as max_order FROM videos WHERE format_id = ?");
 $stmt->execute([$data['formatId']]);
 $result = $stmt->fetch();
 $sortOrder = ($result['max_order'] ?? 0) + 1;
 
-// Получаем thumbnail
 $thumbnail = $data['poster'] ?? '';
 if (empty($thumbnail)) {
-    $thumbnail = getVideoThumbnail($data['videoUrl']) ?? '';
+    $thumbnail = getVideoThumbnail($videoUrl) ?? '';
 }
 
-// Вставляем видео
 $stmt = $pdo->prepare("
     INSERT INTO videos (title, description, format_id, video_url, thumbnail, duration, sort_order, published)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -59,11 +56,11 @@ $stmt->execute([
     $data['title'],
     $data['description'] ?? '',
     $data['formatId'],
-    $data['videoUrl'],
+    $videoUrl,
     $thumbnail,
     $data['duration'] ?? '',
     $sortOrder,
-    $data['published'] ?? true ? 1 : 0
+    !empty($data['published']) ? 1 : 0
 ]);
 
 $id = $pdo->lastInsertId();
