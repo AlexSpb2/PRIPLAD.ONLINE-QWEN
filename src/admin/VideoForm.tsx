@@ -15,6 +15,7 @@ export default function VideoForm({ video, onClose }: VideoFormProps) {
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [poster, setPoster] = useState("");
+  const [duration, setDuration] = useState("");
   const [formatId, setFormatId] = useState("");
   const [published, setPublished] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -25,6 +26,7 @@ export default function VideoForm({ video, onClose }: VideoFormProps) {
       setDescription(video.description);
       setVideoUrl(video.videoUrl);
       setPoster(video.poster);
+      setDuration("");
       setFormatId(video.formatId);
       setPublished(video.published);
     } else if (data && data.formats.length > 0) {
@@ -38,29 +40,20 @@ export default function VideoForm({ video, onClose }: VideoFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !videoUrl || !formatId) return;
+    if (!title.trim() || !videoUrl.trim() || !formatId) return;
 
     setSaving(true);
     try {
       if (isEditing && video) {
         await updateVideo(video.id, {
-          title,
-          description,
-          videoUrl,
-          poster,
-          formatId,
-          published,
+          title: title.trim(), description, videoUrl: videoUrl.trim(), poster, duration,
+          formatId, published,
         });
       } else {
         const maxSort = Math.max(0, ...data.videos.filter((v) => v.formatId === formatId).map((v) => v.sortOrder));
         await addVideo({
-          title,
-          description,
-          videoUrl,
-          poster,
-          formatId,
-          sortOrder: maxSort + 1,
-          published,
+          title: title.trim(), description, videoUrl: videoUrl.trim(), poster, duration,
+          formatId, sortOrder: maxSort + 1, published,
         });
       }
       onClose();
@@ -71,122 +64,62 @@ export default function VideoForm({ video, onClose }: VideoFormProps) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-coal-950/95 p-4">
-      <div className="w-full max-w-lg overflow-y-auto border border-coal-700 bg-coal-900">
+      <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto border border-coal-700 bg-coal-900">
         <div className="flex items-center justify-between border-b border-coal-700 px-5 py-3">
-          <h3 className="font-display text-base font-bold">
-            {isEditing ? "Редактировать видео" : "Новое видео"}
-          </h3>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center border border-coal-600 text-bone hover:border-signal hover:text-signal"
-          >
-            ✕
-          </button>
+          <h3 className="font-display text-base font-bold">{isEditing ? "Редактировать видео" : "Новое видео"}</h3>
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center border border-coal-600 text-bone hover:border-signal hover:text-signal">✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">
-              Название *
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none"
-            />
+            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Название *</label>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" />
           </div>
 
           <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">
-              Описание
-            </label>
+            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Описание</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">URL / iframe видео *</label>
             <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-              className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">
-              URL видео *
-            </label>
-            <input
-              type="url"
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
               required
-              placeholder="YouTube, Vimeo, VK, RuTube или прямой .mp4"
+              rows={3}
+              placeholder="https://... или полный <iframe ...> код"
               className="w-full border border-coal-600 bg-coal-950 px-3 py-2 font-mono text-xs text-bone focus:border-ember focus:outline-none"
             />
-            <p className="mt-1 font-mono text-[9px] text-coal-600">
-              Поддержка: YouTube, Vimeo, RuTube, VK (video_ext.php), прямые файлы
-            </p>
+            <p className="mt-1 font-mono text-[9px] text-coal-600">YouTube, Shorts, Vimeo, RuTube, VK Video/video_ext.php, iframe/embed, прямой mp4</p>
           </div>
 
           <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">
-              URL постера
-            </label>
-            <input
-              type="url"
-              value={poster}
-              onChange={(e) => setPoster(e.target.value)}
-              placeholder="https://..."
-              className="w-full border border-coal-600 bg-coal-950 px-3 py-2 font-mono text-xs text-bone focus:border-ember focus:outline-none"
-            />
+            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">URL постера</label>
+            <input type="text" value={poster} onChange={(e) => setPoster(e.target.value)} placeholder="https://..." className="w-full border border-coal-600 bg-coal-950 px-3 py-2 font-mono text-xs text-bone focus:border-ember focus:outline-none" />
           </div>
 
-          <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">
-              Формат *
-            </label>
-            <select
-              value={formatId}
-              onChange={(e) => setFormatId(e.target.value)}
-              required
-              className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none"
-            >
-              {formats.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Длительность</label>
+              <input type="text" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="00:30" className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" />
+            </div>
+            <div>
+              <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Формат *</label>
+              <select value={formatId} onChange={(e) => setFormatId(e.target.value)} required className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none">
+                {formats.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={published}
-                onChange={(e) => setPublished(e.target.checked)}
-                className="h-4 w-4 accent-ember"
-              />
-              <span className="font-mono text-xs uppercase tracking-wider text-bone-dim">
-                Опубликовано
-              </span>
-            </label>
-          </div>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} className="h-4 w-4 accent-ember" />
+            <span className="font-mono text-xs uppercase tracking-wider text-bone-dim">Опубликовано</span>
+          </label>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="border border-coal-600 px-4 py-2 font-mono text-xs uppercase tracking-wider text-bone-dim hover:border-bone-dim hover:text-bone"
-            >
-              Отмена
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-ember px-5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-coal-950 hover:bg-ember-soft disabled:opacity-60"
-            >
-              {saving ? "Сохранение..." : isEditing ? "Сохранить" : "Добавить"}
-            </button>
+            <button type="button" onClick={onClose} className="border border-coal-600 px-4 py-2 font-mono text-xs uppercase tracking-wider text-bone-dim hover:border-bone-dim hover:text-bone">Отмена</button>
+            <button type="submit" disabled={saving} className="bg-ember px-5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-coal-950 hover:bg-ember-soft disabled:opacity-60">{saving ? "Сохранение..." : isEditing ? "Сохранить" : "Добавить"}</button>
           </div>
         </form>
       </div>
