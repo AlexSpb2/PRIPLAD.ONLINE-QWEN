@@ -2,15 +2,11 @@ import { useState, useEffect } from "react";
 import { useApp } from "../store/AppContext";
 import type { Video } from "../types";
 
-interface VideoFormProps {
-  video: Video | null;
-  onClose: () => void;
-}
+interface VideoFormProps { video: Video | null; onClose: () => void; }
 
 export default function VideoForm({ video, onClose }: VideoFormProps) {
   const { data, addVideo, updateVideo } = useApp();
   const isEditing = !!video;
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -22,44 +18,30 @@ export default function VideoForm({ video, onClose }: VideoFormProps) {
 
   useEffect(() => {
     if (video) {
-      setTitle(video.title);
-      setDescription(video.description);
-      setVideoUrl(video.videoUrl);
-      setPoster(video.poster);
-      setDuration("");
-      setFormatId(video.formatId);
+      setTitle(video.title); setDescription(video.description); setVideoUrl(video.videoUrl);
+      setPoster(video.poster); setDuration(video.duration || ""); setFormatId(video.formatId);
       setPublished(video.published);
-    } else if (data && data.formats.length > 0) {
+    } else if (data?.formats.length) {
       setFormatId(data.formats[0].id);
     }
   }, [video, data]);
 
   if (!data) return null;
-
   const formats = [...data.formats].sort((a, b) => a.sortOrder - b.sortOrder);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !videoUrl.trim() || !formatId) return;
-
     setSaving(true);
     try {
       if (isEditing && video) {
-        await updateVideo(video.id, {
-          title: title.trim(), description, videoUrl: videoUrl.trim(), poster, duration,
-          formatId, published,
-        });
+        await updateVideo(video.id, { title: title.trim(), description, videoUrl: videoUrl.trim(), poster, duration, formatId, published });
       } else {
         const maxSort = Math.max(0, ...data.videos.filter((v) => v.formatId === formatId).map((v) => v.sortOrder));
-        await addVideo({
-          title: title.trim(), description, videoUrl: videoUrl.trim(), poster, duration,
-          formatId, sortOrder: maxSort + 1, published,
-        });
+        await addVideo({ title: title.trim(), description, videoUrl: videoUrl.trim(), poster, duration, formatId, sortOrder: maxSort + 1, published });
       }
       onClose();
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   return (
@@ -69,58 +51,17 @@ export default function VideoForm({ video, onClose }: VideoFormProps) {
           <h3 className="font-display text-base font-bold">{isEditing ? "Редактировать видео" : "Новое видео"}</h3>
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center border border-coal-600 text-bone hover:border-signal hover:text-signal">✕</button>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
-          <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Название *</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" />
-          </div>
-
-          <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Описание</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" />
-          </div>
-
-          <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">URL / iframe видео *</label>
-            <textarea
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              required
-              rows={3}
-              placeholder="https://... или полный <iframe ...> код"
-              className="w-full border border-coal-600 bg-coal-950 px-3 py-2 font-mono text-xs text-bone focus:border-ember focus:outline-none"
-            />
-            <p className="mt-1 font-mono text-[9px] text-coal-600">YouTube, Shorts, Vimeo, RuTube, VK Video/video_ext.php, iframe/embed, прямой mp4</p>
-          </div>
-
-          <div>
-            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">URL постера</label>
-            <input type="text" value={poster} onChange={(e) => setPoster(e.target.value)} placeholder="https://..." className="w-full border border-coal-600 bg-coal-950 px-3 py-2 font-mono text-xs text-bone focus:border-ember focus:outline-none" />
-          </div>
-
+          <div><label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Название *</label><input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" /></div>
+          <div><label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Описание</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" /></div>
+          <div><label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">URL / iframe видео *</label><textarea value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} required rows={3} placeholder="https://... или полный <iframe ...> код" className="w-full border border-coal-600 bg-coal-950 px-3 py-2 font-mono text-xs text-bone focus:border-ember focus:outline-none" /><p className="mt-1 font-mono text-[9px] text-coal-600">YouTube, Shorts, Vimeo, RuTube, VK Video/video_ext.php, iframe/embed, прямой mp4</p></div>
+          <div><label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">URL постера</label><input type="text" value={poster} onChange={(e) => setPoster(e.target.value)} placeholder="https://..." className="w-full border border-coal-600 bg-coal-950 px-3 py-2 font-mono text-xs text-bone focus:border-ember focus:outline-none" /></div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Длительность</label>
-              <input type="text" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="00:30" className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" />
-            </div>
-            <div>
-              <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Формат *</label>
-              <select value={formatId} onChange={(e) => setFormatId(e.target.value)} required className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none">
-                {formats.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-              </select>
-            </div>
+            <div><label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Длительность</label><input type="text" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="00:30" className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none" /></div>
+            <div><label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">Формат *</label><select value={formatId} onChange={(e) => setFormatId(e.target.value)} required className="w-full border border-coal-600 bg-coal-950 px-3 py-2 text-sm text-bone focus:border-ember focus:outline-none">{formats.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}</select></div>
           </div>
-
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} className="h-4 w-4 accent-ember" />
-            <span className="font-mono text-xs uppercase tracking-wider text-bone-dim">Опубликовано</span>
-          </label>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="border border-coal-600 px-4 py-2 font-mono text-xs uppercase tracking-wider text-bone-dim hover:border-bone-dim hover:text-bone">Отмена</button>
-            <button type="submit" disabled={saving} className="bg-ember px-5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-coal-950 hover:bg-ember-soft disabled:opacity-60">{saving ? "Сохранение..." : isEditing ? "Сохранить" : "Добавить"}</button>
-          </div>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} className="h-4 w-4 accent-ember" /><span className="font-mono text-xs uppercase tracking-wider text-bone-dim">Опубликовано</span></label>
+          <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={onClose} className="border border-coal-600 px-4 py-2 font-mono text-xs uppercase tracking-wider text-bone-dim hover:border-bone-dim hover:text-bone">Отмена</button><button type="submit" disabled={saving} className="bg-ember px-5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-coal-950 hover:bg-ember-soft disabled:opacity-60">{saving ? "Сохранение..." : isEditing ? "Сохранить" : "Добавить"}</button></div>
         </form>
       </div>
     </div>
