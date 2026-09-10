@@ -9,25 +9,11 @@ import FormatIcon from "./FormatIcon";
 export default function FeaturedWorks() {
   const { data } = useApp();
   const [lightbox, setLightbox] = useState<Video | null>(null);
-  const [activeFormat, setActiveFormat] = useState<string | null>(null);
 
   if (!data) return null;
 
   const formats = [...data.formats].sort((a, b) => a.sortOrder - b.sortOrder);
   const publishedVideos = data.videos.filter((v) => v.published);
-
-  // Если выбран формат — показываем все его видео
-  // Иначе — первые 2 опубликованных видео каждого формата
-  const displayVideos: Video[] = activeFormat
-    ? publishedVideos
-        .filter((v) => v.formatId === activeFormat)
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-    : formats.flatMap((f) =>
-        publishedVideos
-          .filter((v) => v.formatId === f.id)
-          .sort((a, b) => a.sortOrder - b.sortOrder)
-          .slice(0, 2)
-      );
 
   return (
     <>
@@ -45,45 +31,35 @@ export default function FeaturedWorks() {
             </div>
           </Reveal>
 
-          {/* Фильтр по форматам */}
-          <Reveal delay={100}>
-            <div className="mb-6 flex flex-wrap gap-2">
-              <button
-                onClick={() => setActiveFormat(null)}
-                className={`border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
-                  activeFormat === null
-                    ? "border-ember bg-ember text-coal-950"
-                    : "border-line text-bone-dim hover:text-bone"
-                }`}
-              >
-                Все
-              </button>
-              {formats.map((f) => (
-                <button
-                  key={f.id}
-                  onClick={() => setActiveFormat(f.id)}
-                  className={`flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
-                    activeFormat === f.id
-                      ? "border-ember bg-ember text-coal-950"
-                      : "border-line text-bone-dim hover:text-bone"
-                  }`}
-                >
-                  <FormatIcon formatName={f.name} className="h-3 w-3" />
-                  {f.name}
-                </button>
-              ))}
-            </div>
-          </Reveal>
+          {/* Группировка по форматам */}
+          {formats.map((format) => {
+            const formatVideos = publishedVideos
+              .filter((v) => v.formatId === format.id)
+              .sort((a, b) => a.sortOrder - b.sortOrder);
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {displayVideos.map((video, i) => (
-              <Reveal key={video.id} delay={(i % 3) * 90}>
-                <VideoCard video={video} onOpen={setLightbox} />
-              </Reveal>
-            ))}
-          </div>
+            if (formatVideos.length === 0) return null;
 
-          {displayVideos.length === 0 && (
+            return (
+              <div key={format.id} className="mb-10 last:mb-0">
+                <Reveal>
+                  <div className="mb-4 flex items-center gap-2 border-b border-line pb-3">
+                    <FormatIcon formatName={format.name} className="h-4 w-4 text-ember" />
+                    <h3 className="font-display text-lg font-bold sm:text-xl">{format.name}</h3>
+                  </div>
+                </Reveal>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {formatVideos.map((video, i) => (
+                    <Reveal key={video.id} delay={(i % 3) * 90}>
+                      <VideoCard video={video} onOpen={setLightbox} />
+                    </Reveal>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          {publishedVideos.length === 0 && (
             <p className="mt-8 text-center font-mono text-sm text-coal-600">
               Нет опубликованных видео
             </p>

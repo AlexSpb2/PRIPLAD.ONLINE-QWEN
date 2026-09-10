@@ -43,7 +43,7 @@ const INITIAL_DATA: AppData = {
   videos: [
     {
       id: "video-1",
-      title: "Случайный прохожий",
+      title: "Нейророзыгрыш: Случайный прохожий",
       description: "AI-генерация неожиданной ситуации в городе",
       videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
       poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
@@ -53,7 +53,7 @@ const INITIAL_DATA: AppData = {
     },
     {
       id: "video-2",
-      title: "Кофе в парке",
+      title: "Нейророзыгрыш: Кофе в парке",
       description: "Неожиданный поворот с чашкой кофе",
       videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
       poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
@@ -63,7 +63,7 @@ const INITIAL_DATA: AppData = {
     },
     {
       id: "video-3",
-      title: "Свобода",
+      title: "Одним словом: Свобода",
       description: "Визуальная метафора свободы",
       videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
       poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/Sintel.jpg",
@@ -73,7 +73,7 @@ const INITIAL_DATA: AppData = {
     },
     {
       id: "video-4",
-      title: "Время",
+      title: "Одним словом: Время",
       description: "Мимолётность момента",
       videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
       poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/TearsOfSteel.jpg",
@@ -83,7 +83,7 @@ const INITIAL_DATA: AppData = {
     },
     {
       id: "video-5",
-      title: "День рождения",
+      title: "Герой праздника: День рождения",
       description: "Персонализированное поздравление",
       videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
       poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg",
@@ -93,7 +93,7 @@ const INITIAL_DATA: AppData = {
     },
     {
       id: "video-6",
-      title: "Юбилей",
+      title: "Герой праздника: Юбилей",
       description: "Торжественное поздравление",
       videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
       poster: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg",
