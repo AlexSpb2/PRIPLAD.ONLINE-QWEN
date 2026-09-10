@@ -1,110 +1,103 @@
 <?php
 /**
- * Вспомогательные функции API
+ * Общие функции API
  */
 
-/**
- * Проверка авторизации
- */
-function requireAuth() {
-    if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized']);
-        exit;
+require_once __DIR__ . '/config.php';
+
+function jsonResponse(array $data, int $status = 200): void {
+    http_response_code($status);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+function requireAuth(): void {
+    if (empty($_SESSION['authenticated'])) {
+        jsonResponse(['error' => 'Unauthorized'], 401);
     }
-    
-    // Проверка времени сессии
-    if (isset($_SESSION['last_activity'])) {
-        $elapsed = time() - $_SESSION['last_activity'];
-        if ($elapsed > SESSION_LIFETIME) {
-            session_destroy();
-            http_response_code(401);
-            echo json_encode(['error' => 'Session expired']);
-            exit;
-        }
+
+    $lastActivity = $_SESSION['last_activity'] ?? 0;
+    if ($lastActivity && (time() - $lastActivity) > SESSION_LIFETIME) {
+        $_SESSION = [];
+        session_destroy();
+        jsonResponse(['error' => 'Session expired'], 401);
     }
-    
-    // Обновляем время последней активности
+
     $_SESSION['last_activity'] = time();
 }
 
-/**
- * Получить JSON данные из запроса
- */
-function getJsonInput() {
-    $input = file_get_contents('php://input');
-    $data = json_decode($input, true);
-    
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid JSON']);
-        exit;
-    }
-    
-    return $data;
+function getJsonInput(): array {
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw ?: '{}', true);
+    return is_array($data) ? $data : [];
 }
 
-/**
- * Валидация URL видео
- */
-function validateVideoUrl($url) {
-    if (empty($url)) {
-        return false;
+function isAllowedHost(string $host, array $domains): bool {
+    $host = strtolower(preg_replace('/^www\./', '', $host));
+    foreach ($domains as $domain) {
+        $domain = strtolower(preg_replace('/^www\./', '', $domain));
+        if ($host === $domain || str_ends_with($host, '.' . $domain)) {
+            return true;
+        }
     }
-    
-    // Разрешённые домены
-    $allowedDomains = [
-        'youtube.com',
-        'youtu.be',
-        'vimeo.com',
-        'rutube.ru',
-        'vk.com',
-        'vkvideo.ru',
-    ];
-    
-    // Проверяем, является ли URL прямым видеофайлом
-    if (preg_match('/\.(mp4|webm|mov|m4v|ogv)(\?|$)/i', $url)) {
-        return true;
-    }
-    
-    // Проверяем домен
-    $host = parse_url($url, PHP_URL_HOST);
-    if ($host && in_array(strtolower($host), $allowedDomains)) {
-        return true;
-    }
-    
-    // Разрешаем video_ext.php для VK
-    if (strpos($url, 'video_ext.php') !== false) {
-        return true;
-    }
-    
     return false;
 }
 
-/**
- * Получить thumbnail для видео
- */
-function getVideoThumbnail($url) {
-    // YouTube
-    if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?\n]+)/', $url, $matches)) {
-        return "https://img.youtube.com/vi/{$matches[1]}/maxresdefault.jpg";
-    }
-    
-    // Vimeo
-    if (preg_match('/vimeo\.com\/(\d+)/', $url, $matches)) {
-        // Для Vimeo нужно делать API запрос, возвращаем заглушку
+function extractIframeSrc(string $value): ?string {
+    if (!preg_match('/<iframe\b[^>]*\bsrc\s*=\s*["\']([^"\']+)["\'][^>]*>/i', $value, $match)) {
         return null;
     }
-    
-    // RuTube
-    if (preg_match('/rutube\.ru\/video\/([^\/\?]+)/', $url, $matches)) {
-        return null; // Нужен API запрос
+    return html_entity_decode(trim($match[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
+function normalizeVideoUrl(string $value): string {
+    $value = trim($value);
+    $iframeSrc = extractIframeSrc($value);
+    return $iframeSrc ?: $value;
+}
+
+function validateVideoUrl(string $url): bool {
+    $url = normalizeVideoUrl($url);
+    if ($url === '') return false;
+
+    // Разрешаем iframe/embed-коды только с корректным src.
+    if (str_contains($url, '<iframe') || str_contains($url, '>')) {
+        return false;
     }
-    
-    // VK
-    if (preg_match('/vk\.com\/video.*?oid=(-?\d+).*?id=(\d+)/', $url, $matches)) {
-        return null; // Нужен API запрос
+
+    if (preg_match('/^https?:\/\//i', $url)) {
+        $parts = parse_url($url);
+        if (!$parts || empty($parts['host'])) return false;
+
+        $allowedDomains = [
+            'youtube.com', 'youtu.be',
+            'vimeo.com',
+            'rutube.ru',
+            'vk.com', 'vkvideo.ru'
+        ];
+
+        if (isAllowedHost($parts['host'], $allowedDomains)) {
+            return true;
+        }
+
+        // VK video_ext.php — рабочий embed пользователя, не преобразуем его.
+        if (basename($parts['path'] ?? '') === 'video_ext.php' && isAllowedHost($parts['host'], ['vk.com', 'vkvideo.ru'])) {
+            return true;
+        }
+
+        // Прямые видеофайлы.
+        return (bool)preg_match('/\.(mp4|webm|mov|m4v|ogv)(?:\?.*)?$/i', $parts['path'] ?? '');
     }
-    
+
+    return false;
+}
+
+function getVideoThumbnail(string $url): ?string {
+    $url = normalizeVideoUrl($url);
+
+    if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?\/]+)/i', $url, $match)) {
+        return 'https://img.youtube.com/vi/' . $match[1] . '/hqdefault.jpg';
+    }
+
     return null;
 }
