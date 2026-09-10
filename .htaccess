@@ -1,33 +1,23 @@
 # Apache конфигурация для PRIPLAD.ONLINE
 
-# Включаем mod_rewrite
 RewriteEngine On
 
-# Перенаправляем все запросы к /api на index.php
-RewriteCond %{REQUEST_URI} ^/api/
-RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+# /api/index.php обслуживается напрямую. Остальные API-маршруты направляем в него.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^api(?:/.*)?$ api/index.php [QSA,L]
 
-# Перенаправляем все запросы к index.html для SPA
+# SPA fallback
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.html [L]
 
-# Запрещаем доступ к config.php
+# Запрещаем доступ к конфигу и служебным файлам.
 <Files "config.php">
-    Order Allow,Deny
-    Deny from all
+    Require all denied
 </Files>
 
-# Запрещаем доступ к .env и другим чувствительным файлам
 <FilesMatch "\.(env|log|sql|md)$">
-    Order Allow,Deny
-    Deny from all
+    Require all denied
 </FilesMatch>
 
-# CORS заголовки (если нужно)
-<IfModule mod_headers.c>
-    Header set Access-Control-Allow-Origin "https://priplad.online"
-    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
-    Header set Access-Control-Allow-Headers "Content-Type"
-    Header set Access-Control-Allow-Credentials "true"
-</IfModule>
+# CORS для API задаётся динамически в PHP по ALLOWED_ORIGINS.
