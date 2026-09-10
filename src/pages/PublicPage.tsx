@@ -109,9 +109,6 @@ export default function PublicPage() {
             <Aperture className="h-6 w-6 text-ember" />
             <div>
               <p className="font-display text-sm font-black leading-none">АЛЕКСЕЙ ПРИПЛАД</p>
-              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">
-                DIRECTOR / VIDEOGRAPHER / AI VIDEO
-              </p>
             </div>
           </div>
 
