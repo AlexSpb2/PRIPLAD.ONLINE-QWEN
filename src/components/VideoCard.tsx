@@ -72,6 +72,16 @@ export default function VideoCard({ video, onOpen }: VideoCardProps) {
           </span>
         </span>
       </div>
+      
+      {/* Название и описание ПОД изображением */}
+      <div className="p-3">
+        <h3 className="font-display text-sm font-semibold leading-snug text-bone sm:text-base">
+          {video.title}
+        </h3>
+        <p className="mt-1 line-clamp-2 text-xs text-bone-dim">
+          {video.description}
+        </p>
+      </div>
     </button>
   );
 }
