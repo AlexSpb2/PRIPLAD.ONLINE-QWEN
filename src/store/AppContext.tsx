@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { AppData, Video, Format, Showreel } from "../types";
-import { api } from "../api/mockApi";
+import { api } from "../api/api";
 
 interface AppContextType {
   data: AppData | null;
   loading: boolean;
+  error: string | null;
   refresh: () => Promise<void>;
   // Видео
   addVideo: (video: Omit<Video, "id">) => Promise<void>;
@@ -24,11 +25,19 @@ const AppContext = createContext<AppContextType | null>(null);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = async () => {
-    const d = await api.data();
-    setData(d);
-    setLoading(false);
+    try {
+      setLoading(true);
+      setError(null);
+      const d = await api.data();
+      setData(d);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -80,6 +89,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         data,
         loading,
+        error,
         refresh,
         addVideo,
         updateVideo,

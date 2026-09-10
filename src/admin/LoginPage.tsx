@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api } from "../api/mockApi";
+import { api } from "../api/api";
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -15,13 +15,17 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setError("");
     setLoading(true);
     
-    const result = await api.login(password);
-    setLoading(false);
-    
-    if (result.success) {
-      onLogin();
-    } else {
-      setError("Неверный пароль");
+    try {
+      const result = await api.login(password);
+      if (result.success) {
+        onLogin();
+      } else {
+        setError("Неверный пароль");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка входа");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,10 +68,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             {loading ? "Вход..." : "Войти"}
           </button>
         </form>
-
-        <p className="mt-6 text-center font-mono text-[10px] text-coal-600">
-          Mock пароль: priplad2026
-        </p>
       </div>
     </div>
   );

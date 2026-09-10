@@ -32,15 +32,36 @@ function Aperture({ className = "h-7 w-7" }: { className?: string }) {
 }
 
 export default function PublicPage() {
-  const { data, loading } = useApp();
+  const { data, loading, error } = useApp();
   const progress = useScrollProgress();
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-coal-950">
         <p className="font-mono text-sm text-bone-dim">Загрузка...</p>
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-coal-950 px-4">
+        <div className="max-w-md text-center">
+          <h2 className="font-display text-xl font-black text-signal">Ошибка загрузки</h2>
+          <p className="mt-4 font-mono text-sm text-bone-dim">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-6 border border-ember px-6 py-2 font-mono text-xs uppercase tracking-wider text-ember hover:bg-ember hover:text-coal-950"
+          >
+            Повторить
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return null;
   }
 
   return (
@@ -109,6 +130,9 @@ export default function PublicPage() {
             <Aperture className="h-6 w-6 text-ember" />
             <div>
               <p className="font-display text-sm font-black leading-none">АЛЕКСЕЙ ПРИПЛАД</p>
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-bone-dim">
+                DIRECTOR / VIDEOGRAPHER / AI VIDEO
+              </p>
             </div>
           </div>
 

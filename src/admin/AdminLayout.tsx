@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { api } from "../api/mockApi";
+import { api } from "../api/api";
 
 interface AdminLayoutProps {
   children: ReactNode;

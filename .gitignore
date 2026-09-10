@@ -3,3 +3,20 @@ node_modules/
 dist/
 build/
 *.log
+
+# Конфигурация с секретами
+api/config.php
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
