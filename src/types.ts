@@ -16,6 +16,7 @@ export interface Video {
   description: string;
   videoUrl: string;
   poster: string;
+  duration: string;
   formatId: string;
   sortOrder: number;
   published: boolean;
